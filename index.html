@@ -25,9 +25,9 @@
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
-  html,body{height:100%}
+  html{height:100%;overflow-x:clip}
   body{
-    margin:0;
+    margin:0;min-height:100%;overflow-x:clip;
     font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
     background:
       radial-gradient(circle at 15% 10%, #fff0fa 0%, transparent 45%),
@@ -53,8 +53,9 @@
   }
 
   h1{
-    font-size:clamp(1.1rem,5vw,1.5rem);
-    margin:4px 0 2px;text-align:center;font-weight:800;letter-spacing:.3px;
+    font-size:clamp(1rem,4.4vw,1.4rem);
+    margin:8px 0 2px;text-align:center;font-weight:800;letter-spacing:.2px;
+    padding:0 48px;
   }
   .sub{font-size:.85rem;opacity:.75;margin:0 0 10px;text-align:center}
 
@@ -107,7 +108,7 @@
   .item.sumiu{opacity:0;transform:scale(.2);pointer-events:none}
   .item.dormindo{opacity:.35;pointer-events:none}
 
-  #comprimido{width:22%;left:2%;bottom:8%}
+  #comprimido{width:22%;left:5%;bottom:8%}
   #copo{width:24%;right:1%;bottom:5%}
 
   .item .flutua{animation:flutuar 2.6s ease-in-out infinite}
@@ -201,6 +202,32 @@
   .medida{opacity:0;transition:opacity .6s ease}
   .medida.ativo{opacity:1}
 
+  /* brilhinhos de festa no final */
+  #brilhinhos > g > g{opacity:0;transform-box:fill-box;transform-origin:center}
+  #brilhinhos.ativo > g > g{animation:festa 1.6s ease-out both}
+  #brilhinhos.ativo > g:nth-child(2) > g{animation-delay:.12s}
+  #brilhinhos.ativo > g:nth-child(3) > g{animation-delay:.24s}
+  #brilhinhos.ativo > g:nth-child(4) > g{animation-delay:.36s}
+  #brilhinhos.ativo > g:nth-child(5) > g{animation-delay:.48s}
+  #brilhinhos.ativo > g:nth-child(6) > g{animation-delay:.6s}
+  @keyframes festa{
+    0%{opacity:0;transform:scale(.2) rotate(0)}
+    40%{opacity:1;transform:scale(1.15) rotate(25deg)}
+    100%{opacity:.55;transform:scale(1) rotate(0)}
+  }
+
+  /* botão de som */
+  #btnSom{
+    position:absolute;top:10px;right:10px;
+    width:42px;height:42px;min-height:42px;padding:0;border-radius:50%;
+    font-size:1.1rem;background:#fff;color:var(--texto);
+    box-shadow:0 3px 0 rgba(183,156,240,.5);
+    opacity:1;transform:none;pointer-events:auto;
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid var(--lilas-forte);
+  }
+  #btnSom:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(183,156,240,.5)}
+
   .legenda-xray{
     font-family:inherit;font-weight:700;fill:var(--xray-linha);
   }
@@ -229,6 +256,21 @@
 
   .rodape{margin-top:14px;font-size:.75rem;opacity:.6;text-align:center;line-height:1.5}
 
+  /* telemóvel deitado / ecrãs baixos: encolhe tudo para caber sem scroll */
+  @media (max-height:560px){
+    .app{padding:6px 10px 12px}
+    h1{font-size:1rem;margin:2px 0 0}
+    .sub{display:none}
+    .balao{min-height:44px;padding:6px 12px;margin-bottom:6px;font-size:.85rem}
+    .palco{min-height:130px;max-height:58dvh;height:auto;aspect-ratio:1/0.55}
+    .passos{margin-top:4px}
+    .passo{width:8px;height:8px}
+    .rodape{display:none}
+    .botoes{margin-top:6px}
+    button{padding:9px 18px;min-height:42px}
+    #btnSom{width:34px;height:34px;min-height:34px;top:4px;right:4px;font-size:.9rem}
+  }
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;animation-iteration-count:1 !important}
   }
@@ -238,6 +280,7 @@
 <div class="bolha b1"></div><div class="bolha b2"></div><div class="bolha b3"></div>
 
 <div class="app">
+  <button id="btnSom" aria-label="Ligar ou desligar o som" title="Som">🔊</button>
   <h1 id="titulo">Vamos ajudar a Lili? 💊</h1>
   <p class="sub" id="subtitulo">Arrasta com o dedo ou com o rato</p>
 
@@ -408,6 +451,16 @@
           </g>
         </g>
 
+        <!-- brilhinhos de festa -->
+        <g id="brilhinhos" fill="#ffd166">
+          <g transform="translate(122,412)"><g><path d="M0 -11 L3 -3 L11 0 L3 3 L0 11 L-3 3 L-11 0 L-3 -3 Z"/></g></g>
+          <g transform="translate(280,406)"><g><path d="M0 -9 L2.5 -2.5 L9 0 L2.5 2.5 L0 9 L-2.5 2.5 L-9 0 L-2.5 -2.5 Z"/></g></g>
+          <g transform="translate(100,486)"><g><path d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z"/></g></g>
+          <g transform="translate(302,494)"><g><path d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z"/></g></g>
+          <g transform="translate(140,540)"><g><path d="M0 -7 L2 -2 L7 0 L2 2 L0 7 L-2 2 L-7 0 L-2 -2 Z"/></g></g>
+          <g transform="translate(268,546)"><g><path d="M0 -9 L2.5 -2.5 L9 0 L2.5 2.5 L0 9 L-2.5 2.5 L-9 0 L-2.5 -2.5 Z"/></g></g>
+        </g>
+
         <!-- estrelinha final -->
         <g transform="translate(200,452)"><g id="estrelaFinal">
           <path d="M0 -34 L10 -11 L35 -8 L17 8 L22 32 L0 20 L-22 32 L-17 8 L-35 -8 L-10 -11 Z"
@@ -455,11 +508,51 @@
   const estrela   = $("#estrelaFinal");
   const brilho    = $("#brilhoEstomago");
   const medida    = $("#medida");
+  const brilhinhos= $("#brilhinhos");
+  const btnSom    = $("#btnSom");
 
   let etapa = "comprimido"; // comprimido -> agua -> pronto -> xray -> fim
   const timers = [];
   const depois = (fn, ms)=>{ timers.push(setTimeout(fn, ms)); };
   const limparTimers = ()=>{ timers.forEach(clearTimeout); timers.length = 0; };
+
+  /* ---------- somzinhos gentis (sem ficheiros externos) ---------- */
+  let audio = null, somLigado = true;
+  function ctx(){
+    if(!audio){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(AC) audio = new AC();
+    }
+    if(audio && audio.state === "suspended") audio.resume();
+    return audio;
+  }
+  function nota(freq, inicio, dur, volume){
+    const a = ctx(); if(!a) return;
+    const osc = a.createOscillator(), g = a.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, a.currentTime + inicio);
+    g.gain.setValueAtTime(0, a.currentTime + inicio);
+    g.gain.linearRampToValueAtTime(volume, a.currentTime + inicio + .03);
+    g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + inicio + dur);
+    osc.connect(g).connect(a.destination);
+    osc.start(a.currentTime + inicio);
+    osc.stop(a.currentTime + inicio + dur + .05);
+  }
+  function toca(tipo){
+    if(!somLigado || !ctx()) return;
+    if(tipo==="pop"){ nota(620,0,.14,.14); nota(880,.06,.16,.1); }
+    if(tipo==="agua"){ [520,460,400,350,310].forEach((f,i)=>nota(f,i*.11,.2,.07)); }
+    if(tipo==="sucesso"){ [523,659,784,1047].forEach((f,i)=>nota(f,i*.12,.35,.11)); }
+    if(tipo==="ops"){ nota(330,0,.16,.07); }
+  }
+  function vibra(padrao){
+    if(navigator.vibrate) { try{ navigator.vibrate(padrao); }catch(_){} }
+  }
+  btnSom.addEventListener("click", ()=>{
+    somLigado = !somLigado;
+    btnSom.textContent = somLigado ? "🔊" : "🔇";
+    if(somLigado) toca("pop");
+  });
 
   /* ---------- mensagens ---------- */
   function diz(texto){
@@ -537,6 +630,7 @@
         quandoSoltar();
       }else{
         el.style.transform = "";
+        toca("ops");
         diz("Quase! Leva mesmo até a boquinha da Lili 😊");
       }
     }
@@ -563,6 +657,7 @@
       "translate("+(b.x - (r.left+r.width/2))+"px,"+(b.y - (r.top+r.height/2))+"px) scale(.45)";
 
     mascote.classList.add("boca-aberta");
+    toca("pop"); vibra(30);
     diz("Abre a boca… aaah! 😮");
 
     depois(()=>{ comprimido.classList.add("sumiu"); }, 480);
@@ -588,6 +683,7 @@
       "translate("+(b.x - (r.left+r.width/2))+"px,"+(b.y - (r.top+r.height/2)-10)+"px) rotate(-55deg) scale(.85)";
 
     mascote.classList.add("boca-aberta");
+    toca("agua"); vibra([20,60,20]);
     diz("Glup, glup… 💧");
 
     // esvazia o copo devagar
@@ -632,6 +728,8 @@
     depois(()=>{
       brilho.classList.add("ativo");
       estrela.classList.add("ativo");
+      brilhinhos.classList.add("ativo");
+      toca("sucesso"); vibra([40,80,40,80,60]);
       diz("Conseguiu! ⭐ Foi fácil, né? O comprimido já chegou ao estômago 💜");
       balao.style.background = "#fffaf0";
       btnReset.classList.add("aparece");
@@ -661,11 +759,10 @@
     aguaCopo.style.opacity = "1";
     mascote.classList.remove("boca-aberta","engolindo","feliz");
 
-    grupoDescida.classList.remove("ativo");
-    aguinha.classList.remove("ativo");
-    estrela.classList.remove("ativo");
-    brilho.classList.remove("ativo");
-    medida.classList.remove("ativo");
+    [grupoDescida, aguinha, estrela, brilho, medida, brilhinhos].forEach(el=>{
+      el.classList.remove("ativo");
+      void el.getBoundingClientRect(); // força o reflow para as animações recomeçarem do zero
+    });
 
     btnXray.classList.remove("aparece");
     btnReset.classList.remove("aparece");
