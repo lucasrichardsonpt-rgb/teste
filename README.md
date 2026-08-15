@@ -15,14 +15,19 @@ nem servidor — é um único arquivo, todo desenhado em SVG.
 
 | Botão | O que acontece |
 |---|---|
-| 💊 **Colocar comprimido** | A mão dela leva o comprimido até a boca, a boca abre e ele entra |
-| 💧 **Beber água** | Ela leva o copo à boca, inclina, bebe e engole |
+| 💊 **Colocar na língua** | A mão leva o comprimido até a boca e a câmera se aproxima: dá para ver ele em cima da língua, entre os dentes e a garganta |
+| 💧 **Beber água** | Ela leva o copo à boca e bebe; de perto, a água enche a boca em volta do comprimido |
+| 😮 **Engolir** | O comprimido vai para o fundo da garganta e desce até o estômago |
+| 🔎 **Ver de perto** | Alterna entre a Mia inteira e o close da boca, na hora que quiser |
 | 🔍 **Ligar raio-X** | O corpo fica transparente e azulado: aparecem a garganta e o estômago |
 | 🔄 **Recomeçar** | Volta tudo ao início |
 
 O raio-X pode ser ligado **a qualquer momento** — antes, durante ou depois.
-O melhor é ligar antes de beber a água: aí dá para ver o comprimido escorregando
-pela garganta, empurrado pela água, até chegar no estômago.
+O melhor é ligar antes de engolir: aí dá para ver o comprimido escorregando pela
+garganta, empurrado pela água, até chegar no estômago.
+
+Dá para engolir sem beber água antes — e aí o simulador mostra o comprimido
+descendo bem mais devagar, para deixar claro por que a água ajuda.
 
 ## A ideia
 
