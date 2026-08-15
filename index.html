@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#fdf3ff">
+<title>Tomar comprimido é fácil! 💊</title>
+<style>
+  :root{
+    --rosa:#ffd7e8;
+    --rosa-forte:#ff9ec4;
+    --lilas:#efe3ff;
+    --lilas-forte:#b79cf0;
+    --azul:#cfe9ff;
+    --azul-forte:#6fb6f0;
+    --verde:#c9f2dd;
+    --amarelo:#ffe9a8;
+    --texto:#5b4a6b;
+    --traco:#6d5b80;
+    --fundo:#fdf3ff;
+    --xray-fundo:#1b1b3a;
+    --xray-linha:#a9d8ff;
+    --xray-brilho:#c9b8ff;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, #fff0fa 0%, transparent 45%),
+      radial-gradient(circle at 85% 20%, #eaf3ff 0%, transparent 45%),
+      var(--fundo);
+    color:var(--texto);
+    overflow-x:hidden;
+    -webkit-user-select:none;user-select:none;
+  }
+
+  /* nuvenzinhas decorativas */
+  .bolha{position:fixed;border-radius:50%;opacity:.5;pointer-events:none;z-index:0}
+  .b1{width:120px;height:120px;background:#ffe4f2;top:-30px;left:-30px}
+  .b2{width:90px;height:90px;background:#e3f0ff;bottom:-20px;right:-20px}
+  .b3{width:60px;height:60px;background:#f3e8ff;top:40%;right:-25px}
+
+  .app{
+    position:relative;z-index:1;
+    min-height:100dvh;
+    display:flex;flex-direction:column;align-items:center;
+    padding:14px 14px 26px;
+    max-width:520px;margin:0 auto;
+  }
+
+  h1{
+    font-size:clamp(1.1rem,5vw,1.5rem);
+    margin:4px 0 2px;text-align:center;font-weight:800;letter-spacing:.3px;
+  }
+  .sub{font-size:.85rem;opacity:.75;margin:0 0 10px;text-align:center}
+
+  /* ---------- balão de fala / mensagem ---------- */
+  .balao{
+    background:#fff;border:3px solid var(--lilas-forte);
+    border-radius:22px;padding:10px 16px;margin:0 0 10px;
+    font-size:clamp(.9rem,3.8vw,1.05rem);text-align:center;line-height:1.35;
+    box-shadow:0 6px 0 rgba(183,156,240,.25);
+    min-height:58px;display:flex;align-items:center;justify-content:center;
+    width:100%;
+    transition:transform .45s cubic-bezier(.34,1.56,.64,1), background-color .45s ease;
+  }
+  .balao span{
+    display:block;
+    animation:entraTexto .5s ease both;
+  }
+  @keyframes entraTexto{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  .balao.pop{transform:scale(1.05)}
+
+  /* ---------- palco ---------- */
+  .palco{
+    position:relative;width:100%;flex:1 1 auto;
+    aspect-ratio:1/1.05;min-height:300px;max-height:64dvh;
+    display:flex;align-items:center;justify-content:center;
+    touch-action:none;
+  }
+  .cena{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity .6s ease, transform .6s cubic-bezier(.4,0,.2,1);
+  }
+  .cena.oculta{opacity:0;transform:scale(.85);pointer-events:none}
+
+  .mascote{width:100%;height:100%;overflow:visible}
+
+  /* ---------- itens arrastáveis ---------- */
+  .item{
+    position:absolute;
+    touch-action:none;cursor:grab;
+    transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s ease;
+    filter:drop-shadow(0 4px 6px rgba(109,91,128,.25));
+    z-index:5;
+  }
+  .item:active{cursor:grabbing}
+  .item.pegando{transition:none;filter:drop-shadow(0 10px 12px rgba(109,91,128,.35)) }
+  .item.sumiu{opacity:0;transform:scale(.2);pointer-events:none}
+  .item.dormindo{opacity:.35;pointer-events:none}
+
+  #comprimido{width:22%;left:2%;bottom:8%}
+  #copo{width:24%;right:1%;bottom:5%}
+
+  .item .flutua{animation:flutuar 2.6s ease-in-out infinite}
+  @keyframes flutuar{
+    0%,100%{transform:translateY(0) rotate(-3deg)}
+    50%{transform:translateY(-7px) rotate(3deg)}
+  }
+
+  /* aro pulsante indicando "arrasta este" */
+  .item::after{
+    content:"";position:absolute;inset:-14%;
+    border:3px dashed var(--rosa-forte);border-radius:50%;
+    opacity:0;transition:opacity .45s ease;
+    animation:girar 8s linear infinite;
+  }
+  .item.ativo::after{opacity:.75}
+  @keyframes girar{to{transform:rotate(360deg)}}
+
+  /* alvo da boca */
+  #alvoBoca{
+    position:absolute;width:32%;aspect-ratio:1;left:50%;top:44%;
+    transform:translate(-50%,-50%);
+    border-radius:50%;pointer-events:none;
+    border:3px dashed var(--azul-forte);
+    opacity:0;transition:opacity .45s ease, transform .45s ease;
+  }
+  #alvoBoca.mostra{opacity:.55}
+  #alvoBoca.perto{opacity:.95;transform:translate(-50%,-50%) scale(1.12);border-color:var(--rosa-forte)}
+
+  /* ---------- botões ---------- */
+  .botoes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px;width:100%}
+  button{
+    font-family:inherit;font-size:clamp(.95rem,4vw,1.1rem);font-weight:800;
+    color:#fff;border:none;border-radius:999px;
+    padding:13px 24px;cursor:pointer;
+    background:linear-gradient(180deg,var(--lilas-forte),#9d7fe8);
+    box-shadow:0 5px 0 #7f63c9;
+    transition:transform .45s cubic-bezier(.34,1.56,.64,1), opacity .45s ease, box-shadow .25s ease;
+    opacity:0;transform:translateY(14px) scale(.9);pointer-events:none;
+    min-height:48px;
+  }
+  button.aparece{opacity:1;transform:none;pointer-events:auto}
+  button:active{transform:translateY(3px);box-shadow:0 2px 0 #7f63c9}
+  button.rosa{background:linear-gradient(180deg,var(--rosa-forte),#f57ba9);box-shadow:0 5px 0 #d95f8c}
+  button.rosa:active{box-shadow:0 2px 0 #d95f8c}
+
+  .passos{display:flex;gap:8px;margin:10px 0 0;justify-content:center}
+  .passo{width:11px;height:11px;border-radius:50%;background:#e3d6f3;transition:all .45s ease}
+  .passo.on{background:var(--rosa-forte);transform:scale(1.35)}
+
+  /* ---------- cena raio-X ---------- */
+  #cenaXray{
+    background:radial-gradient(circle at 50% 35%, #4a4494 0%, #322f6e 70%);
+    border-radius:28px;
+    box-shadow:inset 0 0 40px rgba(169,216,255,.18);
+  }
+  #cenaXray.oculta{transform:scale(1.25)}
+
+  .cintila{animation:cintilar 3.5s ease-in-out infinite}
+  @keyframes cintilar{0%,100%{opacity:.55}50%{opacity:1}}
+
+  /* pílula descendo no raio-X */
+  #grupoDescida{opacity:0;transition:opacity .5s ease}
+  #grupoDescida.ativo{opacity:1;animation:descer 6.4s cubic-bezier(.45,.05,.55,.95) forwards}
+  @keyframes descer{
+    0%   {transform:translate(0px,0px)}
+    12%  {transform:translate(4px,30px)}
+    30%  {transform:translate(-4px,88px)}
+    55%  {transform:translate(3px,150px)}
+    80%  {transform:translate(-2px,205px)}
+    100% {transform:translate(0px,238px)}
+  }
+  #aguinha{opacity:0;transition:opacity .5s ease}
+  #aguinha.ativo{opacity:1;animation:descerAgua 6.4s cubic-bezier(.45,.05,.55,.95) forwards}
+  @keyframes descerAgua{
+    0%{transform:translateY(-30px);opacity:0}
+    10%{opacity:.85}
+    100%{transform:translateY(226px);opacity:.5}
+  }
+
+  #estrelaFinal{opacity:0;transform-origin:center;transition:opacity .5s ease}
+  #estrelaFinal.ativo{opacity:1;animation:plim .7s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes plim{
+    from{transform:scale(0) rotate(-40deg)}
+    to{transform:scale(1) rotate(0)}
+  }
+  #brilhoEstomago{opacity:0;transition:opacity .8s ease}
+  #brilhoEstomago.ativo{opacity:1;animation:pulsarBrilho 2s ease-in-out infinite}
+  @keyframes pulsarBrilho{0%,100%{opacity:.35}50%{opacity:.85}}
+
+  .medida{opacity:0;transition:opacity .6s ease}
+  .medida.ativo{opacity:1}
+
+  .legenda-xray{
+    font-family:inherit;font-weight:700;fill:var(--xray-linha);
+  }
+
+  /* boca abre/fecha */
+  #bocaFechada,#bocaAberta{transition:opacity .4s ease, transform .4s ease;transform-origin:200px 250px}
+  .boca-aberta #bocaFechada{opacity:0;transform:scaleY(.4)}
+  .boca-aberta #bocaAberta{opacity:1;transform:scaleY(1)}
+  #bocaAberta{opacity:0;transform:scaleY(.3)}
+
+  .engolindo #pescoco{animation:gole .9s ease-in-out}
+  @keyframes gole{
+    0%,100%{transform:scaleX(1)}
+    40%{transform:scaleX(1.18)}
+    70%{transform:scaleX(.94)}
+  }
+  #pescoco{transform-origin:200px 330px;transition:transform .4s ease}
+
+  .feliz #olhoE,.feliz #olhoD{animation:piscar 1.2s ease-in-out}
+  @keyframes piscar{
+    0%,100%{transform:scaleY(1)}
+    50%{transform:scaleY(.15)}
+  }
+  #olhoE{transform-origin:168px 218px}
+  #olhoD{transform-origin:232px 218px}
+
+  .rodape{margin-top:14px;font-size:.75rem;opacity:.6;text-align:center;line-height:1.5}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important}
+  }
+</style>
+</head>
+<body>
+<div class="bolha b1"></div><div class="bolha b2"></div><div class="bolha b3"></div>
+
+<div class="app">
+  <h1 id="titulo">Vamos ajudar a Lili? 💊</h1>
+  <p class="sub" id="subtitulo">Arrasta com o dedo ou com o rato</p>
+
+  <div class="balao" id="balao"><span id="msg">Oi! Eu sou a Lili. Arrasta o comprimido até a minha boca 👉</span></div>
+
+  <div class="palco" id="palco">
+
+    <!-- ============ CENA NORMAL ============ -->
+    <div class="cena" id="cenaNormal">
+      <svg class="mascote" id="mascote" viewBox="0 58 400 332" aria-label="Personagem Lili">
+        <defs>
+          <linearGradient id="gCabelo" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffc7e0"/><stop offset="100%" stop-color="#ffa8cd"/>
+          </linearGradient>
+          <radialGradient id="gRosto" cx="50%" cy="40%">
+            <stop offset="0%" stop-color="#fff7ef"/><stop offset="100%" stop-color="#ffe6d6"/>
+          </radialGradient>
+        </defs>
+
+        <!-- chão fofo -->
+        <ellipse cx="200" cy="372" rx="132" ry="16" fill="#f0e2fb"/>
+
+        <!-- corpo -->
+        <path d="M136 350 q0-72 64-72 t64 72 z" fill="#c9e4ff" stroke="var(--traco)" stroke-width="7" stroke-linejoin="round"/>
+        <!-- braços -->
+        <path id="bracoE" d="M144 306 q-34 10 -40 40" fill="none" stroke="var(--traco)" stroke-width="7" stroke-linecap="round"/>
+        <path id="bracoD" d="M256 306 q34 10 40 40" fill="none" stroke="var(--traco)" stroke-width="7" stroke-linecap="round"/>
+
+        <!-- pescoço -->
+        <rect id="pescoco" x="184" y="300" width="32" height="30" rx="12" fill="#ffe6d6" stroke="var(--traco)" stroke-width="7"/>
+
+        <!-- cabelo de trás (dois rabinhos + volume) -->
+        <ellipse cx="112" cy="248" rx="26" ry="42" fill="url(#gCabelo)" stroke="var(--traco)" stroke-width="7"/>
+        <ellipse cx="288" cy="248" rx="26" ry="42" fill="url(#gCabelo)" stroke="var(--traco)" stroke-width="7"/>
+        <ellipse cx="200" cy="204" rx="118" ry="114" fill="url(#gCabelo)" stroke="var(--traco)" stroke-width="7"/>
+        <!-- rosto -->
+        <ellipse cx="200" cy="222" rx="104" ry="100" fill="url(#gRosto)" stroke="var(--traco)" stroke-width="7"/>
+        <!-- franja -->
+        <path d="M98 190 q10-96 102-96 t102 96 q-16-46 -30-58 q-26 30 -72 30 t-72-30 q-14 12 -30 58 z"
+              fill="url(#gCabelo)" stroke="var(--traco)" stroke-width="7" stroke-linejoin="round"/>
+        <!-- lacinho -->
+        <g transform="translate(300,132) rotate(18)">
+          <path d="M0 0 l-30-18 0 36 z" fill="var(--rosa-forte)" stroke="var(--traco)" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M0 0 l30-18 0 36 z" fill="var(--rosa-forte)" stroke="var(--traco)" stroke-width="6" stroke-linejoin="round"/>
+          <circle cx="0" cy="0" r="9" fill="#fff0f6" stroke="var(--traco)" stroke-width="5"/>
+        </g>
+
+        <!-- olhos -->
+        <g id="olhoE"><ellipse cx="168" cy="218" rx="13" ry="16" fill="var(--traco)"/><circle cx="173" cy="212" r="5" fill="#fff"/></g>
+        <g id="olhoD"><ellipse cx="232" cy="218" rx="13" ry="16" fill="var(--traco)"/><circle cx="237" cy="212" r="5" fill="#fff"/></g>
+        <!-- sobrancelhas -->
+        <path d="M152 192 q16-10 32-2" fill="none" stroke="var(--traco)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M216 190 q16-8 32 2" fill="none" stroke="var(--traco)" stroke-width="6" stroke-linecap="round"/>
+        <!-- bochechas -->
+        <ellipse cx="142" cy="248" rx="18" ry="12" fill="#ffc0d6" opacity=".85"/>
+        <ellipse cx="258" cy="248" rx="18" ry="12" fill="#ffc0d6" opacity=".85"/>
+
+        <!-- boca fechada (sorriso) -->
+        <path id="bocaFechada" d="M172 252 q28 26 56 0" fill="none" stroke="var(--traco)" stroke-width="7" stroke-linecap="round"/>
+        <!-- boca aberta -->
+        <g id="bocaAberta">
+          <ellipse cx="200" cy="262" rx="34" ry="30" fill="#c96a86" stroke="var(--traco)" stroke-width="7"/>
+          <path d="M172 272 q28 22 56 0 q-28 12 -56 0z" fill="#ff9ec4"/>
+        </g>
+      </svg>
+
+      <!-- alvo da boca -->
+      <div id="alvoBoca"></div>
+
+      <!-- COMPRIMIDO arrastável -->
+      <div class="item ativo" id="comprimido" role="button" tabindex="0" aria-label="Comprimido, arraste até a boca">
+        <div class="flutua">
+          <svg viewBox="0 0 100 70" style="width:100%;display:block;overflow:visible">
+            <g transform="rotate(-18 50 35)">
+              <rect x="14" y="20" width="72" height="30" rx="15" fill="#fff" stroke="var(--traco)" stroke-width="5"/>
+              <path d="M50 20 h21 a15 15 0 0 1 0 30 h-21 z" fill="var(--azul)" stroke="var(--traco)" stroke-width="5"/>
+              <ellipse cx="34" cy="30" rx="9" ry="4" fill="#fff" opacity=".9"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- COPO arrastável -->
+      <div class="item dormindo" id="copo" role="button" tabindex="0" aria-label="Copo de água, arraste até a boca">
+        <div class="flutua">
+          <svg viewBox="0 0 100 120" style="width:100%;display:block;overflow:visible">
+            <path d="M22 14 h56 l-8 92 a10 10 0 0 1 -10 8 h-20 a10 10 0 0 1 -10 -8 z"
+                  fill="#eaf7ff" stroke="var(--traco)" stroke-width="6" stroke-linejoin="round"/>
+            <path id="aguaCopo" d="M27 44 h46 l-6 62 a10 10 0 0 1 -9 8 h-16 a10 10 0 0 1 -9 -8 z"
+                  fill="var(--azul-forte)" opacity=".75"/>
+            <path d="M27 44 q12 8 23 0 t23 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+            <ellipse cx="38" cy="70" rx="4" ry="7" fill="#fff" opacity=".7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CENA RAIO-X ============ -->
+    <div class="cena oculta" id="cenaXray">
+      <svg viewBox="0 0 400 560" style="width:100%;height:100%" aria-label="Visão raio-X">
+        <defs>
+          <radialGradient id="gGlow" cx="50%" cy="50%">
+            <stop offset="0%" stop-color="#c9b8ff" stop-opacity=".9"/>
+            <stop offset="100%" stop-color="#c9b8ff" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="gTubo" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#5f7fd8" stop-opacity=".35"/>
+            <stop offset="50%" stop-color="#a9d8ff" stop-opacity=".22"/>
+            <stop offset="100%" stop-color="#5f7fd8" stop-opacity=".35"/>
+          </linearGradient>
+        </defs>
+
+        <!-- estrelinhas de fundo -->
+        <g fill="#a9d8ff" class="cintila">
+          <circle cx="40" cy="60" r="2.5"/><circle cx="350" cy="90" r="2"/><circle cx="60" cy="420" r="2"/>
+          <circle cx="340" cy="470" r="2.5"/><circle cx="30" cy="250" r="1.8"/><circle cx="370" cy="300" r="1.8"/>
+        </g>
+
+        <!-- cabeça de perfil (raio-x fofo) -->
+        <path d="M200 30 q90 0 90 92 q0 44 -26 66 l0 22 -128 0 0 -22 q-26 -22 -26 -66 q0 -92 90 -92 z"
+              fill="#7aa6ff" fill-opacity=".16" stroke="var(--xray-linha)" stroke-width="6" stroke-linejoin="round"/>
+        <!-- carinha tranquila -->
+        <circle cx="172" cy="104" r="7" fill="var(--xray-linha)"/>
+        <circle cx="228" cy="104" r="7" fill="var(--xray-linha)"/>
+        <path d="M176 136 q24 20 48 0" fill="none" stroke="var(--xray-linha)" stroke-width="5" stroke-linecap="round"/>
+
+        <!-- BOCA (abertura larga) -->
+        <path d="M150 168 q50 26 100 0" fill="none" stroke="var(--xray-linha)" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+        <text x="98" y="200" text-anchor="end" font-size="15" class="legenda-xray" opacity=".85">boca</text>
+        <path d="M104 195 q26 -8 46 -22" fill="none" stroke="var(--xray-linha)" stroke-width="3" opacity=".55"/>
+
+        <!-- GARGANTA: tubo bem largo -->
+        <path d="M152 210 q6 130 4 190 l88 0 q-2 -60 4 -190 z"
+              fill="url(#gTubo)" stroke="var(--xray-linha)" stroke-width="6" stroke-linejoin="round"/>
+        <text x="272" y="290" text-anchor="start" font-size="15" class="legenda-xray" opacity=".85">garganta</text>
+
+        <!-- medida comparativa -->
+        <g class="medida" id="medida">
+          <line x1="156" y1="252" x2="244" y2="252" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
+          <line x1="156" y1="244" x2="156" y2="260" stroke="#ffd166" stroke-width="3"/>
+          <line x1="244" y1="244" x2="244" y2="260" stroke="#ffd166" stroke-width="3"/>
+          <text x="200" y="240" text-anchor="middle" font-size="14" fill="#ffd166" font-weight="700"
+                font-family="inherit">bem larga!</text>
+        </g>
+
+        <!-- ESTÔMAGO fofo -->
+        <path d="M150 400 q-34 26 -22 66 q14 48 72 48 q56 0 66 -46 q10 -44 -22 -68 z"
+              fill="#7aa6ff" fill-opacity=".18" stroke="var(--xray-linha)" stroke-width="6" stroke-linejoin="round"/>
+        <text x="200" y="536" text-anchor="middle" font-size="15" class="legenda-xray" opacity=".85">estômago</text>
+        <ellipse id="brilhoEstomago" cx="200" cy="462" rx="80" ry="60" fill="url(#gGlow)"/>
+
+        <!-- água empurrando -->
+        <g id="aguinha">
+          <ellipse cx="200" cy="196" rx="40" ry="18" fill="#6fb6f0" opacity=".45"/>
+          <ellipse cx="182" cy="176" rx="12" ry="8" fill="#a9d8ff" opacity=".5"/>
+          <ellipse cx="220" cy="172" rx="9" ry="6" fill="#a9d8ff" opacity=".45"/>
+          <ellipse cx="200" cy="160" rx="16" ry="9" fill="#a9d8ff" opacity=".35"/>
+        </g>
+
+        <!-- comprimido descendo (bem pequeno!) -->
+        <g id="grupoDescida">
+          <g transform="translate(200,214)">
+            <g transform="rotate(-14)">
+              <rect x="-16" y="-7" width="32" height="14" rx="7" fill="#ffffff" stroke="#2b2b5a" stroke-width="3"/>
+              <path d="M0 -7 h9 a7 7 0 0 1 0 14 h-9 z" fill="#a9d8ff" stroke="#2b2b5a" stroke-width="3"/>
+            </g>
+            <circle cx="0" cy="0" r="28" fill="#fff" opacity=".12"/>
+          </g>
+        </g>
+
+        <!-- estrelinha final -->
+        <g transform="translate(200,452)"><g id="estrelaFinal">
+          <path d="M0 -34 L10 -11 L35 -8 L17 8 L22 32 L0 20 L-22 32 L-17 8 L-35 -8 L-10 -11 Z"
+                fill="#ffd166" stroke="#fff3cf" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="-9" cy="-2" r="3" fill="#8a6d1f"/>
+          <circle cx="9" cy="-2" r="3" fill="#8a6d1f"/>
+          <path d="M-8 8 q8 8 16 0" fill="none" stroke="#8a6d1f" stroke-width="3" stroke-linecap="round"/>
+        </g></g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="passos" id="passos">
+    <div class="passo on"></div><div class="passo"></div><div class="passo"></div><div class="passo"></div>
+  </div>
+
+  <div class="botoes">
+    <button id="btnXray">Ver por dentro 🔍</button>
+    <button id="btnReset" class="rosa">Tentar de novo 🔄</button>
+  </div>
+
+  <p class="rodape">Feito com carinho 💜 Se ficares com dúvida, pede ajuda a um adulto.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const $ = (s)=>document.querySelector(s);
+
+  const palco     = $("#palco");
+  const mascote   = $("#mascote");
+  const comprimido= $("#comprimido");
+  const copo      = $("#copo");
+  const alvo      = $("#alvoBoca");
+  const balao     = $("#balao");
+  const btnXray   = $("#btnXray");
+  const btnReset  = $("#btnReset");
+  const cenaNormal= $("#cenaNormal");
+  const cenaXray  = $("#cenaXray");
+  const passos    = [...document.querySelectorAll(".passo")];
+  const aguaCopo  = $("#aguaCopo");
+  const grupoDescida = $("#grupoDescida");
+  const aguinha   = $("#aguinha");
+  const estrela   = $("#estrelaFinal");
+  const brilho    = $("#brilhoEstomago");
+  const medida    = $("#medida");
+
+  let etapa = "comprimido"; // comprimido -> agua -> pronto -> xray -> fim
+  const timers = [];
+  const depois = (fn, ms)=>{ timers.push(setTimeout(fn, ms)); };
+  const limparTimers = ()=>{ timers.forEach(clearTimeout); timers.length = 0; };
+
+  /* ---------- mensagens ---------- */
+  function diz(texto){
+    balao.innerHTML = "<span>"+texto+"</span>";
+    balao.classList.add("pop");
+    setTimeout(()=>balao.classList.remove("pop"), 450);
+  }
+
+  function marcarPasso(i){
+    passos.forEach((p,idx)=>p.classList.toggle("on", idx<=i));
+  }
+
+  /* ---------- centro da boca em coordenadas de tela ---------- */
+  function centroBoca(){
+    // medido a partir da própria boca no SVG — funciona em qualquer tamanho de ecrã
+    const r = document.getElementById("bocaAberta").getBoundingClientRect();
+    const m = mascote.getBoundingClientRect();
+    return {
+      x: r.left + r.width/2,
+      y: r.top  + r.height/2,
+      raio: Math.max(72, m.width*0.26)
+    };
+  }
+
+  function posicionarAlvo(){
+    const b = centroBoca();
+    const p = palco.getBoundingClientRect();
+    alvo.style.left = ((b.x - p.left)/p.width*100)+"%";
+    alvo.style.top  = ((b.y - p.top )/p.height*100)+"%";
+    alvo.style.width = (b.raio*2/p.width*100)+"%";
+  }
+  window.addEventListener("resize", posicionarAlvo);
+
+  /* ---------- drag & drop unificado (mouse + toque) ---------- */
+  function tornarArrastavel(el, quandoSoltar){
+    let arrastando=false, idPonteiro=null, dx=0, dy=0, moveu=0, base=null;
+
+    function inicio(e){
+      if(el.classList.contains("dormindo") || el.classList.contains("sumiu")) return;
+      arrastando=true; moveu=0; idPonteiro=e.pointerId;
+      base = el.getBoundingClientRect();
+      dx = e.clientX - (base.left + base.width/2);
+      dy = e.clientY - (base.top  + base.height/2);
+      el.classList.add("pegando");
+      el.setPointerCapture(idPonteiro);
+      alvo.classList.add("mostra");
+      posicionarAlvo();
+      e.preventDefault();
+    }
+
+    function mover(e){
+      if(!arrastando || e.pointerId!==idPonteiro) return;
+      const p = palco.getBoundingClientRect();
+      const x = e.clientX - dx - (base.left + base.width/2);
+      const y = e.clientY - dy - (base.top  + base.height/2);
+      moveu = Math.hypot(x,y);
+      el.style.transform = "translate("+x+"px,"+y+"px) scale(1.12)";
+      const b = centroBoca();
+      const dist = Math.hypot(e.clientX - b.x, e.clientY - b.y);
+      alvo.classList.toggle("perto", dist < b.raio);
+      e.preventDefault();
+    }
+
+    function fim(e){
+      if(!arrastando || e.pointerId!==idPonteiro) return;
+      arrastando=false;
+      el.classList.remove("pegando");
+      try{ el.releasePointerCapture(idPonteiro); }catch(_){}
+      alvo.classList.remove("mostra","perto");
+      const b = centroBoca();
+      const dist = Math.hypot(e.clientX - b.x, e.clientY - b.y);
+      // toque simples também vale (mais fácil para quem tem pressa)
+      const acertou = dist < b.raio*1.15 || moveu < 8;
+      if(acertou){
+        quandoSoltar();
+      }else{
+        el.style.transform = "";
+        diz("Quase! Leva mesmo até a boquinha da Lili 😊");
+      }
+    }
+
+    el.addEventListener("pointerdown", inicio);
+    el.addEventListener("pointermove", mover);
+    el.addEventListener("pointerup", fim);
+    el.addEventListener("pointercancel", fim);
+    el.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter"||e.key===" "){ e.preventDefault(); quandoSoltar(); }
+    });
+  }
+
+  /* ---------- etapa 1: comprimido ---------- */
+  function receberComprimido(){
+    if(etapa!=="comprimido") return;
+    etapa = "animando";
+    comprimido.classList.remove("ativo");
+
+    // voa até a boca
+    const b = centroBoca();
+    const r = comprimido.getBoundingClientRect();
+    comprimido.style.transform =
+      "translate("+(b.x - (r.left+r.width/2))+"px,"+(b.y - (r.top+r.height/2))+"px) scale(.45)";
+
+    mascote.classList.add("boca-aberta");
+    diz("Abre a boca… aaah! 😮");
+
+    depois(()=>{ comprimido.classList.add("sumiu"); }, 480);
+    depois(()=>{
+      mascote.classList.remove("boca-aberta");
+      diz("Pronto, está na boca! Agora traz a água 💧");
+      copo.classList.remove("dormindo");
+      copo.classList.add("ativo");
+      etapa = "agua";
+      marcarPasso(1);
+    }, 900);
+  }
+
+  /* ---------- etapa 2: água ---------- */
+  function beberAgua(){
+    if(etapa!=="agua") return;
+    etapa = "animando";
+    copo.classList.remove("ativo");
+
+    const b = centroBoca();
+    const r = copo.getBoundingClientRect();
+    copo.style.transform =
+      "translate("+(b.x - (r.left+r.width/2))+"px,"+(b.y - (r.top+r.height/2)-10)+"px) rotate(-55deg) scale(.85)";
+
+    mascote.classList.add("boca-aberta");
+    diz("Glup, glup… 💧");
+
+    // esvazia o copo devagar
+    depois(()=>{ aguaCopo.style.transition="opacity .9s ease"; aguaCopo.style.opacity="0"; }, 600);
+    depois(()=>{ mascote.classList.add("engolindo"); }, 1200);
+    depois(()=>{
+      mascote.classList.remove("boca-aberta");
+      copo.classList.add("sumiu");
+    }, 1600);
+    depois(()=>{
+      mascote.classList.remove("engolindo");
+      mascote.classList.add("feliz");
+      diz("Engoliste! 🎉 Queres ver o que aconteceu lá dentro?");
+      btnXray.classList.add("aparece");
+      etapa = "pronto";
+      marcarPasso(2);
+    }, 2300);
+  }
+
+  /* ---------- etapa 3: raio-X ---------- */
+  function verPorDentro(){
+    if(etapa!=="pronto") return;
+    etapa = "xray";
+    cenaNormal.classList.add("oculta");
+    cenaXray.classList.remove("oculta");
+    btnXray.classList.remove("aparece");
+    document.body.style.background = "#f2eeff";
+    $("#titulo").textContent = "Visão raio-X ✨";
+    $("#subtitulo").textContent = "Olha só como é grande aí dentro!";
+    diz("Olha a garganta… é MUITO maior que o comprimido!");
+    marcarPasso(3);
+
+    depois(()=>{ medida.classList.add("ativo"); }, 700);
+    depois(()=>{
+      grupoDescida.classList.add("ativo");
+      aguinha.classList.add("ativo");
+      diz("A água empurra devagarinho… ele escorrega sozinho 💧");
+    }, 1400);
+    depois(()=>{
+      diz("Viu? A garganta é bem maior que o comprimido — ele desce fácil, ajudado pela água!");
+    }, 4200);
+    depois(()=>{
+      brilho.classList.add("ativo");
+      estrela.classList.add("ativo");
+      diz("Conseguiu! ⭐ Foi fácil, né? O comprimido já chegou ao estômago 💜");
+      balao.style.background = "#fffaf0";
+      btnReset.classList.add("aparece");
+      etapa = "fim";
+    }, 8200);
+  }
+
+  /* ---------- reiniciar ---------- */
+  function reiniciar(){
+    limparTimers();
+    etapa = "comprimido";
+
+    cenaXray.classList.add("oculta");
+    cenaNormal.classList.remove("oculta");
+    document.body.style.background = "";
+    balao.style.background = "";
+    $("#titulo").textContent = "Vamos ajudar a Lili? 💊";
+    $("#subtitulo").textContent = "Arrasta com o dedo ou com o rato";
+
+    [comprimido, copo].forEach(el=>{
+      el.classList.remove("sumiu","pegando","ativo","dormindo");
+      el.style.transform = "";
+    });
+    comprimido.classList.add("ativo");
+    copo.classList.add("dormindo");
+
+    aguaCopo.style.opacity = "1";
+    mascote.classList.remove("boca-aberta","engolindo","feliz");
+
+    grupoDescida.classList.remove("ativo");
+    aguinha.classList.remove("ativo");
+    estrela.classList.remove("ativo");
+    brilho.classList.remove("ativo");
+    medida.classList.remove("ativo");
+
+    btnXray.classList.remove("aparece");
+    btnReset.classList.remove("aparece");
+    marcarPasso(0);
+    diz("Oi! Eu sou a Lili. Arrasta o comprimido até a minha boca 👉");
+  }
+
+  tornarArrastavel(comprimido, receberComprimido);
+  tornarArrastavel(copo, beberAgua);
+  btnXray.addEventListener("click", verPorDentro);
+  btnReset.addEventListener("click", reiniciar);
+
+  posicionarAlvo();
+  // evita o "puxar para atualizar" atrapalhar o arrasto no telemóvel
+  document.addEventListener("touchmove", (e)=>{ if(e.target.closest(".item")) e.preventDefault(); }, {passive:false});
+})();
+</script>
+</body>
+</html>
