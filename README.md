@@ -1,39 +1,46 @@
-# Tomar comprimido é fácil 💊
+# Simulador: como o comprimido desce 💊
 
-Uma página web interativa que mostra, de forma lúdica e sem susto, que tomar um
-comprimido é fácil: ele é pequeno, a garganta é bem maior do que ele, e a água
-ajuda-o a descer.
+Um simulador para brincar e perder o medo de tomar comprimido. A personagem
+(a Mia) faz as ações quando se clica nos botões, e o **raio-X** mostra, dentro
+do corpo dela, o comprimido descendo pela garganta com a ajuda da água.
 
-Feita a pensar numa criança de ~11 anos com medo de tomar comprimidos, para ser
-usada sobretudo no telemóvel.
+Feito para uma criança de ~11 anos usar sozinha, principalmente no celular.
 
 ## Como usar
 
-Abre o ficheiro `index.html` num browser. Não precisa de servidor, instalação
-nem ligação à internet — é um único ficheiro, sem imagens nem dependências
-externas (todos os desenhos são SVG feitos à mão).
+Abra o `index.html` em qualquer navegador. Não precisa de internet, instalação
+nem servidor — é um único arquivo, todo desenhado em SVG.
 
-## O percurso
+## Os botões
 
-1. A mascote "Lili" aparece com um comprimido e um copo de água.
-2. Arrasta-se o comprimido até à boca — ela abre a boca e recebe-o.
-3. Arrasta-se o copo — o copo inclina-se, a água desce e ela engole.
-4. Aparece o botão **Ver por dentro 🔍**.
-5. A cena faz zoom para uma visão raio-X fofa: boca → garganta → estômago, com o
-   comprimido a escorregar pela garganta (muito mais larga do que ele), empurrado
-   pela água.
-6. O comprimido chega ao estômago: estrelinha, brilhinhos e "Conseguiu!".
-7. **Tentar de novo 🔄** reinicia tudo.
+| Botão | O que acontece |
+|---|---|
+| 💊 **Colocar comprimido** | A mão dela leva o comprimido até a boca, a boca abre e ele entra |
+| 💧 **Beber água** | Ela leva o copo à boca, inclina, bebe e engole |
+| 🔍 **Ligar raio-X** | O corpo fica transparente e azulado: aparecem a garganta e o estômago |
+| 🔄 **Recomeçar** | Volta tudo ao início |
 
-## Detalhes
+O raio-X pode ser ligado **a qualquer momento** — antes, durante ou depois.
+O melhor é ligar antes de beber a água: aí dá para ver o comprimido escorregando
+pela garganta, empurrado pela água, até chegar no estômago.
 
-- **Arrastar** funciona com rato e com o dedo (Pointer Events). A zona de acerto
-  é generosa e um toque simples também conta, para não frustrar.
-- **Tom gentil**: se o item for largado longe, a mensagem encoraja em vez de
-  corrigir.
-- **Som** opcional (sintetizado com a Web Audio API, sem ficheiros) e vibração
-  nos momentos-chave; o botão 🔊 no canto liga/desliga.
-- **Acessibilidade**: os itens são focáveis e aceitam Enter/Espaço; animações
-  reduzidas quando o sistema pede `prefers-reduced-motion`.
-- **Responsivo**, com transições de pelo menos 0,4 s e cores pastéis; a visão
-  raio-X usa azul/violeta translúcido, sem ar clínico.
+## A ideia
+
+O medo costuma vir de imaginar que o comprimido é grande demais para passar.
+Então o simulador mostra o contrário, visualmente:
+
+- a garganta é desenhada **bem mais larga** que o comprimido (umas 3 a 4 vezes),
+  com uma medida marcando isso;
+- a água aparece **empurrando** o comprimido para baixo;
+- ele chega ao estômago e ganha uma estrelinha — nada de assustador.
+
+## Detalhes técnicos
+
+- Um único arquivo HTML, sem dependências, imagens ou fontes externas.
+- Personagem e órgãos em SVG; as animações (braço, boca, engolir, descida) são
+  feitas em JavaScript com `requestAnimationFrame`, o que permite acompanhar o
+  movimento passo a passo em vez de um vídeo pronto.
+- Sons suaves sintetizados na hora (Web Audio API) com botão 🔊 para desligar, e
+  vibração nos momentos-chave.
+- Responsivo: funciona em pé e deitado no celular; respeita
+  `prefers-reduced-motion`.
