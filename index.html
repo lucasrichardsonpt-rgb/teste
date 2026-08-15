@@ -75,16 +75,20 @@
             transition:opacity .6s ease,transform .6s cubic-bezier(.4,0,.2,1)}
   svg#perto.ativa{opacity:1;transform:none}
 
+  /* a câmera acompanha o comprimido descendo pela garganta */
+  svg#cena.zoomGarganta{transform-origin:50% 53%;transform:scale(1.8)}
+
   /* peças do corpo trocam de cor no raio-x */
   .pele,.roupa,.cabelo,.contorno,.pelestroke{transition:fill .7s ease,stroke .7s ease,opacity .7s ease}
   .xray .pele,.xray .roupa,.xray .cabelo{fill:var(--x-corpo)}
   .xray .contorno{stroke:var(--x-linha)}
   .xray .pelestroke{stroke:rgba(150,190,255,.25)}
   .xray .detalhe{opacity:.35}
+  /* o caminho por dentro aparece sempre que a câmera acompanha a descida, com ou sem raio-X */
   #interior{opacity:0;transition:opacity .7s ease}
-  .xray #interior{opacity:1}
+  .xray #interior,svg#cena.zoomGarganta #interior{opacity:1}
   #luzXray{opacity:0;transition:opacity .7s ease}
-  .xray #luzXray{opacity:1}
+  .xray #luzXray,svg#cena.zoomGarganta #luzXray{opacity:1}
 
   /* ---- painel de botões ---- */
   .painel{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-top:8px}
@@ -626,50 +630,72 @@
     if(estado.ocupado || !(estado.pilula==="na-lingua" || estado.agua)) return;
     estado.ocupado = true; atualizarBotoes();
     const comAgua = estado.agua, temPilula = estado.pilula==="na-lingua";
+    const vinhaDePerto = estado.vista === "perto";
 
-    // de perto: o comprimido e a água vão para o fundo da garganta
-    if(estado.vista==="perto"){
-      diz(temPilula ? "Engolindo… ele vai para trás e desce 😮" : "Engolindo a água…");
+    // de perto: o comprimido e a água vão para o fundo da garganta, ainda na boca
+    if(vinhaDePerto){
+      diz(temPilula ? "Lá vai ele… olha só!" : "Engolindo a água…");
       toca("engole"); vibra([30,70,30]);
-      await anima(1200,t=>{
-        if(temPilula) porPilulaLingua(misturar(LINGUA_Y,FUNDO_GARGANTA,t), misturar(1,.28,t), -8);
+      await anima(900,t=>{
+        if(temPilula) porPilulaLingua(misturar(LINGUA_Y,FUNDO_GARGANTA,t), misturar(1,.32,t), -8);
         if(comAgua) porNivelAgua(misturar(AGUA_CHEIA, AGUA_VAZIA, t));
-        pilulaLingua.setAttribute("opacity", t>.85 ? String((1-t)/.15) : "1");
       });
-      pilulaLingua.setAttribute("opacity","0");
-      aguaBoca.setAttribute("opacity","0");
-      await verDePerto(false);
     }else{
       toca("engole"); vibra([30,70,30]);
     }
 
-    // o pescoço faz o movimento de engolir
-    abrirBoca(0);
-    await anima(800,t=>{
-      const s = 1 + .18*Math.sin(t*Math.PI);
-      pescoco.setAttribute("transform","translate(210,270) scale("+s+",1) translate(-210,-270)");
-    });
-    pescoco.setAttribute("transform","");
-
+    /* só água, sem comprimido: golinho rápido, sem precisar seguir nada */
     if(!temPilula){
+      if(vinhaDePerto){ aguaBoca.setAttribute("opacity","0"); await verDePerto(false); }
+      abrirBoca(0);
+      await anima(700,t=>{
+        const s = 1 + .16*Math.sin(t*Math.PI);
+        pescoco.setAttribute("transform","translate(210,270) scale("+s+",1) translate(-210,-270)");
+      });
+      pescoco.setAttribute("transform","");
       estado.agua = false;
       diz("Pronto! Só a água desceu 💧");
       estado.ocupado = false; atualizarBotoes();
       return;
     }
 
-    // desce pela garganta (dá para ver com o raio-X ligado)
-    pilulaDentro.setAttribute("opacity","1");
+    /* com comprimido: a câmera acompanha ele descendo pela garganta */
     porPilulaDentro(GARGANTA_TOPO,-14);
+    pilulaDentro.setAttribute("opacity","1");
     medida.setAttribute("opacity","1");
     if(comAgua){ aguaDescendo.setAttribute("opacity","1"); porAguaDentro(GARGANTA_TOPO-26); }
+    cena.classList.remove("recuada");
+    cena.classList.add("zoomGarganta");
 
-    if(!estado.xray) diz(comAgua ? "Desceu! Liga o raio-X 🔍 para ver o caminho dele."
-                                 : "Desceu, mas devagarinho — sem água ele escorrega menos.");
-    else diz(comAgua ? "A água empurra e ele escorrega pela garganta…"
-                     : "Sem água ele desce mais devagar… com água é bem mais fácil 💧");
+    if(vinhaDePerto){
+      // dissolve direto do close-up da boca para a garganta já ampliada — sem voltar pro corpo pequeno antes
+      aguaBoca.setAttribute("opacity","0");
+      const transCena = cena.style.transition, transPerto = perto.style.transition;
+      cena.style.transition = "none"; perto.style.transition = "none";
+      cena.style.opacity = "0";
+      void cena.offsetWidth;
+      await anima(750, t=>{
+        perto.style.opacity = String(1-t);
+        cena.style.opacity  = String(t);
+      });
+      perto.classList.remove("ativa"); perto.style.opacity = "";
+      cena.style.opacity = ""; cena.style.transition = transCena; perto.style.transition = transPerto;
+      estado.vista = "corpo";
+    }
 
-    await anima(comAgua ? 2600 : 4200, t=>{
+    // o pescoço faz o movimento de engolir, já dentro do enquadramento ampliado
+    abrirBoca(0);
+    await anima(650,t=>{
+      const s = 1 + .16*Math.sin(t*Math.PI);
+      pescoco.setAttribute("transform","translate(210,270) scale("+s+",1) translate(-210,-270)");
+    });
+    pescoco.setAttribute("transform","");
+
+    diz(comAgua
+      ? "Vê como a garganta é larga? A água empurra e ele escorrega fácil 💧"
+      : "Ele desce devagarinho… com água é bem mais fácil!");
+
+    await anima(comAgua ? 2800 : 4200, t=>{
       const y = misturar(GARGANTA_TOPO, ESTOMAGO-18, t);
       porPilulaDentro(y, -14 + Math.sin(t*7)*10);
       if(comAgua){
@@ -686,9 +712,13 @@
       estrelaEscala.setAttribute("transform","scale("+misturar(.2,1,t)+") rotate("+misturar(-40,0,t)+")");
     }, saltar);
 
-    diz(estado.xray
-      ? "Chegou no estômago! Viu? A garganta é bem maior que o comprimido — ele desce fácil ⭐"
-      : "Chegou no estômago! ⭐ Liga o raio-X 🔍 e faça de novo para ver o caminho todo.");
+    diz("Chegou no estômago! Viu como não tinha nada pra temer? A garganta é bem maior que ele ⭐");
+    await espera(900);
+
+    // a câmera se afasta de novo, revelando a Mia inteirinha e feliz
+    cena.classList.remove("zoomGarganta");
+    await espera(650);
+
     estado.ocupado = false; atualizarBotoes();
   }
 
@@ -712,6 +742,7 @@
   /* ---------- recomeçar ---------- */
   async function recomecar(){
     if(estado.vista==="perto") await verDePerto(false);
+    cena.classList.remove("zoomGarganta");
     estado = { pilula:"na-mao", agua:false, vista:"corpo", ocupado:false, xray:estado.xray };
     porMao(REPOUSO.x, REPOUSO.y);
     abrirBoca(0);
